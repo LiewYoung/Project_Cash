@@ -1,14 +1,22 @@
 package top.liewyoung.network;
-/*
-* @author: LiewYoung
-* @date: 25/12/1
-* @todo:
-*   add network for agent
-* */
+
+/**
+ *
+ * @author LiewYoung
+ * @since 2025-12-1
+ */
+
+// TODO 2025-12-1 Liew.Y : 设计角色属性和方法
 public class agent {
     public String name;
     public String personality;
 
+    /**
+     *
+     * @param firstName 角色名字
+     * @param lastName 角色姓
+     * @param personality 角色人格特质
+     */
     public agent(String firstName,String lastName, String personality) {
         this.name = firstName+" "+lastName;
         this.firstName = firstName;
@@ -16,6 +24,14 @@ public class agent {
         this.personality = personality;
         this.sex = "男";
     }
+
+    /**
+     *
+     * @param firstName 角色名字
+     * @param lastName 角色姓
+     * @param personality 角色人格特质
+     * @param sex 性别（可选）
+     */
     public agent(String firstName,String lastName, String personality,String sex) {
         this.name = firstName+" "+lastName;
         this.firstName = firstName;
