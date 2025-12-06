@@ -60,16 +60,6 @@ public final class Requests {
         return client.send(request,HttpResponse.BodyHandlers.ofString());
     }
 
-    //测试代码
-    public static void main(String[] args) throws IOException, InterruptedException {
-        Message message1 = new Message(Role.SYSTEM,"You are a helpful assistant");
-        Message message2 = new Message(Role.USER,"Hello world");
-
-        ChatRequest req = new ChatRequest("deepseek-chat",false);
-        req.addMessage(message1);
-        req.addMessage(message2);
-
-    }
 }
 
 
