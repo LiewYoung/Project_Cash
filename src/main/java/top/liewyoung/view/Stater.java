@@ -10,7 +10,7 @@ public class Stater {
 
         frame.add(new MainMap(), BorderLayout.CENTER);
         frame.add(new DashboardPanel(), BorderLayout.EAST);
-        frame.setSize(1000, 650);
+        frame.setSize(1000, 735);
 
         frame.setResizable(false);
         frame.setVisible(true);
