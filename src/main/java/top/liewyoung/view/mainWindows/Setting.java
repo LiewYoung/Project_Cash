@@ -34,7 +34,7 @@ public class Setting extends JPanel {
         listPanel.add(title);
 
         ImageIcon icon = new ImageIcon("src/main/resources/Avstar.jpg");
-        listPanel.add(cardFactory("LiewYoung", "<html>North China University of Water Resources and Electric Power<br><b>I just do almost all the Project<b><html>", icon));
+        listPanel.add(cardFactory("LiewYoung", "<html>North China University of Water Resources and Electric Power<html>", icon));
 
         ImageIcon imageIcon = new ImageIcon("src/main/resources/Avstar_1.jpg");
         listPanel.add(cardFactory("刘瑞翔", "North China University of Water Resources and Electric Power", imageIcon));
