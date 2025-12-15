@@ -188,6 +188,8 @@ public class GameGUI extends JFrame {
             SwingUtilities.invokeLater(() -> {
                 JOptionPane.showMessageDialog(this, "Game Over! Final Score: " + board.getScore());
 
+                board.triggerGameOver();
+                this.dispose();
             });
         }
     }
