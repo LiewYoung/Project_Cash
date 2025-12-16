@@ -10,7 +10,7 @@ public class CallTest2048 {
             @Override
             public void onGameEnd(int finalScore) {
                 // 返回2048的分数
-                System.out.println("2048结束，得分：" + finalScore);
+                System.out.println("Over,Score:" + finalScore);
             }
         });
     }

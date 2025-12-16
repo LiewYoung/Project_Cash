@@ -187,7 +187,8 @@ public class GameGUI extends JFrame {
         if (board.isGameOver()) {
             SwingUtilities.invokeLater(() -> {
                 JOptionPane.showMessageDialog(this, "Game Over! Final Score: " + board.getScore());
-
+                board.triggerGameOver();
+                this.dispose();
             });
         }
     }
