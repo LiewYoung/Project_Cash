@@ -90,7 +90,7 @@ public class GameGUI extends JFrame {
     //refreshButton creat fuc
     private JButton createRefreshButton() {
         JButton refreshBotton = new JButton("R");
-        refreshBotton.addActionListener(_ -> {
+        refreshBotton.addActionListener(e -> {
             board.resetBoard();
             refreshBoard();
             this.requestFocusInWindow();
