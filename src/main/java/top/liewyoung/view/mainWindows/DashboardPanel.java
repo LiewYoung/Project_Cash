@@ -10,9 +10,12 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import org.atom.Player;
 import top.liewyoung.strategy.MapPostition;
+import top.liewyoung.strategy.TitlesTypes;
 import top.liewyoung.view.component.MDbutton;
 import top.liewyoung.view.component.MDialog;
+import top.liewyoung.view.tools.EventProcessor;
 
 /**
  * @author LiewYoung
@@ -26,16 +29,8 @@ public class DashboardPanel extends JPanel {
     private final InfoPanel infoPanel;
     private final PropertyPanel propertyPanel;
 
-    // 数据变量
-    private int income = 0;
-    private int outcome = 0;
-
     // Surface: 整个窗口的背景，稍微带一点点灰/绿的暖白
     private final Color MD_SURFACE = new Color(253, 253, 245);
-    // Primary: 最主要的按钮、强调色 (深苔藓绿)
-    private final Color MD_PRIMARY = new Color(56, 106, 32);
-    // OnPrimary: Primary 之上的文字颜色 (白色)
-    private final Color MD_ON_PRIMARY = new Color(255, 255, 255);
     // PrimaryContainer: 概览卡片的背景色 (浅绿，但不是荧光绿)
     private final Color MD_PRIMARY_CONTAINER = new Color(216, 232, 203);
     // OnPrimaryContainer: 概览卡片里的文字颜色 (极深绿)
@@ -46,11 +41,6 @@ public class DashboardPanel extends JPanel {
     private final Color MD_SURFACE_VARIANT = new Color(226, 227, 219);
 
     private final FontSize fontSize = new FontSize(16, 28, 14); // 数字字体稍微加大
-    private final Font FONT_BOLD = new Font(
-        "微软雅黑",
-        Font.BOLD,
-        fontSize.heavy()
-    );
     private final Font FONT_NORMAL = new Font(
         "微软雅黑",
         Font.PLAIN,
@@ -66,6 +56,8 @@ public class DashboardPanel extends JPanel {
     private final MapDraw map;
     private final MapPostition mapPostition = new MapPostition();
     private int playerPosition = 0;
+    private Player currentPlayer;
+    private EventProcessor eventProcessor;
 
     private static int lastDice = 0;
 
@@ -77,9 +69,15 @@ public class DashboardPanel extends JPanel {
         setBorder(new EmptyBorder(16, 16, 16, 16));
         setBackground(MD_SURFACE); // 设置底色
 
+        // 初始化默认玩家
+        initializeDefaultPlayer();
+
         //  初始化子面板
         infoPanel = new InfoPanel();
         propertyPanel = new PropertyPanel();
+
+        // 刷新玩家信息显示
+        infoPanel.refreshData();
 
         //  底部按钮区域
         JButton diceButton = buttonFactory("摇骰子");
@@ -111,6 +109,15 @@ public class DashboardPanel extends JPanel {
         add(buttonContainer, BorderLayout.SOUTH);
     }
 
+    /**
+     * 初始化默认玩家
+     */
+    private void initializeDefaultPlayer() {
+        // 创建默认玩家（普通职员）
+        Player defaultPlayer = new Player("普通职员", 1000, 2000, 1000);
+        setCurrentPlayer(defaultPlayer);
+    }
+
     public void diceEvent() {
         DashboardPanel.lastDice = dice.nextInt(1, 7);
 
@@ -119,12 +126,14 @@ public class DashboardPanel extends JPanel {
             // 动画完成后执行后续逻辑
             playerPosition += DashboardPanel.lastDice;
             playerPosition = playerPosition % 28;
-            String type = map
-                .getType(
-                    mapPostition.mapOrder.get(playerPosition).x(),
-                    mapPostition.mapOrder.get(playerPosition).y()
-                )
-                .name();
+
+            // 获取当前位置的格子类型
+            TitlesTypes currentType = map.getType(
+                mapPostition.mapOrder.get(playerPosition).x(),
+                mapPostition.mapOrder.get(playerPosition).y()
+            );
+
+            String type = currentType.name();
             MDialog dialog = new MDialog(
                 "你摇出了 " + DashboardPanel.lastDice + " 类型：" + type,
                 "我知道了"
@@ -139,13 +148,40 @@ public class DashboardPanel extends JPanel {
             dialog.setAlwaysOnTop(true);
             dialog.setModal(true);
             dialog.setVisible(true);
+
+            // 触发事件处理
+            if (eventProcessor != null) {
+                eventProcessor.processEvent(currentType);
+                // 更新玩家信息显示
+                infoPanel.refreshData();
+            }
         });
     }
 
     public void updateStats(int newIncome, int newOutcome) {
-        this.income = newIncome;
-        this.outcome = newOutcome;
         infoPanel.refreshData();
+    }
+
+    /**
+     * 设置当前玩家并初始化事件处理器
+     */
+    public void setCurrentPlayer(Player player) {
+        this.currentPlayer = player;
+        this.eventProcessor = new EventProcessor(player);
+    }
+
+    /**
+     * 获取当前玩家
+     */
+    public Player getCurrentPlayer() {
+        return currentPlayer;
+    }
+
+    /**
+     * 获取事件处理器
+     */
+    public EventProcessor getEventProcessor() {
+        return eventProcessor;
     }
 
     private JButton buttonFactory(String text) {
@@ -154,20 +190,23 @@ public class DashboardPanel extends JPanel {
     }
 
     /**
-     * 顶部收支概览面板
+     * 顶部玩家信息面板
      */
     class InfoPanel extends JPanel {
 
-        private final JLabel incomeDataLabel;
-        private final JLabel outcomeDataLabel;
+        private final JLabel cashLabel;
+        private final JLabel salaryLabel;
+        private final JLabel expensesLabel;
+        private final JLabel passiveIncomeLabel;
+        private final JLabel cashflowLabel;
 
         public InfoPanel() {
-            setLayout(new GridLayout(1, 2, 0, 0));
+            setLayout(new GridLayout(5, 1, 0, 5));
             setBackground(MD_PRIMARY_CONTAINER); // 容器色背景
 
             TitledBorder titledBorder = new TitledBorder(
                 new LineBorder(MD_PRIMARY_CONTAINER, 0), // 边框颜色与背景一致，隐藏线条
-                "收支概览",
+                "玩家信息",
                 TitledBorder.CENTER,
                 TitledBorder.TOP,
                 FONT_TITLE,
@@ -180,11 +219,17 @@ public class DashboardPanel extends JPanel {
                 )
             );
 
-            incomeDataLabel = createDataLabel(income);
-            outcomeDataLabel = createDataLabel(outcome);
+            cashLabel = createInfoLabel("现金: 0");
+            salaryLabel = createInfoLabel("工资: 0");
+            expensesLabel = createInfoLabel("月支出: 0");
+            passiveIncomeLabel = createInfoLabel("被动收入: 0");
+            cashflowLabel = createInfoLabel("现金流: 0");
 
-            add(createItemPanel("收入", incomeDataLabel));
-            add(createItemPanel("支出", outcomeDataLabel));
+            add(cashLabel);
+            add(salaryLabel);
+            add(expensesLabel);
+            add(passiveIncomeLabel);
+            add(cashflowLabel);
         }
 
         // 简单的圆角绘制，让 InfoPanel 看起来像个圆角卡片
@@ -199,31 +244,30 @@ public class DashboardPanel extends JPanel {
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), 24, 24); // 24px 圆角
         }
 
-        private JLabel createDataLabel(int value) {
-            JLabel label = new JLabel(String.valueOf(value));
+        private JLabel createInfoLabel(String text) {
+            JLabel label = new JLabel(text);
             label.setForeground(MD_ON_PRIMARY_CONTAINER); // 深色文字对比浅色背景
-            label.setFont(FONT_BOLD);
+            label.setFont(new Font("微软雅黑", Font.PLAIN, 14));
+            label.setHorizontalAlignment(SwingConstants.LEFT);
             return label;
         }
 
-        private JPanel createItemPanel(String title, JLabel dataLabel) {
-            JPanel p = new JPanel(new BorderLayout());
-            p.setOpaque(false);
-
-            JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
-            titleLabel.setFont(new Font("微软雅黑", Font.PLAIN, 14));
-            titleLabel.setForeground(MD_ON_PRIMARY_CONTAINER.brighter()); // 标题稍微淡一点
-
-            dataLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-            p.add(titleLabel, BorderLayout.NORTH);
-            p.add(dataLabel, BorderLayout.CENTER);
-            return p;
-        }
-
         public void refreshData() {
-            incomeDataLabel.setText(String.valueOf(income));
-            outcomeDataLabel.setText(String.valueOf(outcome));
+            if (currentPlayer != null) {
+                cashLabel.setText("现金: " + currentPlayer.getCash() + "元");
+                salaryLabel.setText(
+                    "工资: " + currentPlayer.getSalary() + "元"
+                );
+                expensesLabel.setText(
+                    "月支出: " + currentPlayer.getMonthlyExpenses() + "元"
+                );
+                passiveIncomeLabel.setText(
+                    "被动收入: " + currentPlayer.getPassiveIncome() + "元"
+                );
+                cashflowLabel.setText(
+                    "现金流: " + currentPlayer.calculateCashflow() + "元"
+                );
+            }
         }
     }
 

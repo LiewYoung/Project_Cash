@@ -1,10 +1,9 @@
 package top.liewyoung.view.mainWindows;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
-import com.formdev.flatlaf.FlatLightLaf;
 import top.liewyoung.view.ColorSystem.MaterialPalette;
 import top.liewyoung.view.Stater;
 import top.liewyoung.view.component.CircleImageLabel;
@@ -25,6 +24,7 @@ public class Setting extends JPanel {
         setBackground(palette.surface());
         setPreferredSize(new Dimension(1000, 600));
 
+        //对齐组件
         JPanel listPanel = new JPanel();
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
         listPanel.setOpaque(false);
@@ -39,7 +39,7 @@ public class Setting extends JPanel {
         listPanel.add(
             cardFactory(
                 "LiewYoung",
-                "<html>North China University of Water Resources and Electric Power<html>",
+                "North China University of Water Resources and Electric Power",
                 icon
             )
         );
@@ -78,6 +78,7 @@ public class Setting extends JPanel {
         add(listPanel);
     }
 
+    //工厂方法产生卡片
     private JPanel cardFactory(String name, String desc, ImageIcon icon) {
         CircleImageLabel circleImageLabel = new CircleImageLabel(icon, 100);
 
@@ -109,16 +110,18 @@ public class Setting extends JPanel {
 
     public static void main(String[] args) {
         FlatLightLaf.setup();
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                JFrame frame = new JFrame("关于");
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                @Override
+                public void run() {
+                    JFrame frame = new JFrame("关于");
 
-                frame.add(new Setting());
-                frame.pack();
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.setVisible(true);
+                    frame.add(new Setting());
+                    frame.pack();
+                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    frame.setVisible(true);
+                }
             }
-        });
+        );
     }
 }
