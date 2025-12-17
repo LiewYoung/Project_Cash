@@ -5,7 +5,6 @@ import top.liewyoung.view.Stater;
 import top.liewyoung.view.component.MDbutton;
 
 import javax.swing.*;
-import javax.swing.text.SimpleAttributeSet;
 import java.awt.*;
 
 /**

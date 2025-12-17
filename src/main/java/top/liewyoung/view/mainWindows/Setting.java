@@ -1,13 +1,12 @@
 package top.liewyoung.view.mainWindows;
 
+import java.awt.*;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import top.liewyoung.view.ColorSystem.MaterialPalette;
 import top.liewyoung.view.Stater;
 import top.liewyoung.view.component.CircleImageLabel;
 import top.liewyoung.view.component.MDbutton;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
 
 /**
  * 关于界面
@@ -16,6 +15,7 @@ import java.awt.*;
  * @since 2025/12/14
  */
 public class Setting extends JPanel {
+
     private MaterialPalette palette = MaterialPalette.MOSS;
 
     public Setting() {
@@ -34,18 +34,38 @@ public class Setting extends JPanel {
         listPanel.add(title);
 
         ImageIcon icon = new ImageIcon("src/main/resources/Avstar.jpg");
-        listPanel.add(cardFactory("LiewYoung", "<html>North China University of Water Resources and Electric Power<html>", icon));
+        listPanel.add(
+            cardFactory(
+                "LiewYoung",
+                "<html>North China University of Water Resources and Electric Power<html>",
+                icon
+            )
+        );
 
         ImageIcon imageIcon = new ImageIcon("src/main/resources/Avstar_1.jpg");
-        listPanel.add(cardFactory("刘瑞翔", "North China University of Water Resources and Electric Power", imageIcon));
+        listPanel.add(
+            cardFactory(
+                "刘瑞翔",
+                "North China University of Water Resources and Electric Power",
+                imageIcon
+            )
+        );
 
-        ImageIcon imageIcon_1 = new ImageIcon("src/main/resources/Avstar_2.jpg");
-        listPanel.add(cardFactory("Syrnaxei", "North China University of Water Resources and Electric Power", imageIcon_1));
+        ImageIcon imageIcon_1 = new ImageIcon(
+            "src/main/resources/Avstar_2.jpg"
+        );
+        listPanel.add(
+            cardFactory(
+                "Syrnaxei",
+                "North China University of Water Resources and Electric Power",
+                imageIcon_1
+            )
+        );
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setOpaque(false);
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-        JButton buttonRest = new MDbutton("重置地图");
+        JButton buttonRest = new MDbutton("变换地图");
         buttonRest.addActionListener(e -> {
             Stater.map.refreshMap();
         });

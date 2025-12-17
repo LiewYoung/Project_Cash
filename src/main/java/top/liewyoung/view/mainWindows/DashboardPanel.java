@@ -13,7 +13,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.awt.geom.RoundRectangle2D;
 import java.util.Random;
 
 /**
@@ -105,7 +104,7 @@ public class DashboardPanel extends JPanel {
 
     public void diceEvent() {
         DashboardPanel.lastDice = dice.nextInt(1, 7);
-        
+
         // 先触发骰子滚动动画
         map.rollDice(DashboardPanel.lastDice, () -> {
             // 动画完成后执行后续逻辑
