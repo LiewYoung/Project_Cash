@@ -11,6 +11,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import org.atom.Player;
+import top.liewyoung.strategy.asset.Asset;
 import top.liewyoung.strategy.MapPostition;
 import top.liewyoung.strategy.TitlesTypes;
 import top.liewyoung.view.component.MDbutton;
@@ -22,7 +23,8 @@ import top.liewyoung.view.tools.EventProcessor;
  * @since 2025/12/14
  */
 // 简单的字体记录类
-record FontSize(int title, int heavy, int normal) {}
+record FontSize(int title, int heavy, int normal) {
+}
 
 public class DashboardPanel extends JPanel {
 
@@ -42,15 +44,13 @@ public class DashboardPanel extends JPanel {
 
     private final FontSize fontSize = new FontSize(16, 28, 14); // 数字字体稍微加大
     private final Font FONT_NORMAL = new Font(
-        "微软雅黑",
-        Font.PLAIN,
-        fontSize.normal()
-    );
+            "微软雅黑",
+            Font.PLAIN,
+            fontSize.normal());
     private final Font FONT_TITLE = new Font(
-        "微软雅黑",
-        Font.BOLD,
-        fontSize.title()
-    );
+            "微软雅黑",
+            Font.BOLD,
+            fontSize.title());
 
     private final Random dice = new Random();
     private final MapDraw map;
@@ -72,14 +72,14 @@ public class DashboardPanel extends JPanel {
         // 初始化默认玩家
         initializeDefaultPlayer();
 
-        //  初始化子面板
+        // 初始化子面板
         infoPanel = new InfoPanel();
         propertyPanel = new PropertyPanel();
 
         // 刷新玩家信息显示
         infoPanel.refreshData();
 
-        //  底部按钮区域
+        // 底部按钮区域
         JButton diceButton = buttonFactory("摇骰子");
         diceButton.addActionListener(e -> {
             diceEvent();
@@ -129,20 +129,17 @@ public class DashboardPanel extends JPanel {
 
             // 获取当前位置的格子类型
             TitlesTypes currentType = map.getType(
-                mapPostition.mapOrder.get(playerPosition).x(),
-                mapPostition.mapOrder.get(playerPosition).y()
-            );
+                    mapPostition.mapOrder.get(playerPosition).x(),
+                    mapPostition.mapOrder.get(playerPosition).y());
 
             String type = currentType.name();
             MDialog dialog = new MDialog(
-                "你摇出了 " + DashboardPanel.lastDice + " 类型：" + type,
-                "我知道了"
-            );
+                    "你摇出了 " + DashboardPanel.lastDice + " 类型：" + type,
+                    "我知道了");
 
             map.updatePlayerPosition(
-                mapPostition.mapOrder.get(playerPosition).x(),
-                mapPostition.mapOrder.get(playerPosition).y()
-            );
+                    mapPostition.mapOrder.get(playerPosition).x(),
+                    mapPostition.mapOrder.get(playerPosition).y());
 
             dialog.setLocationRelativeTo(this);
             dialog.setAlwaysOnTop(true);
@@ -151,9 +148,13 @@ public class DashboardPanel extends JPanel {
 
             // 触发事件处理
             if (eventProcessor != null) {
+                // 更新所有资产价值（每次骰子后）
+                currentPlayer.getAssetManager().updateAllAssets(dice);
                 eventProcessor.processEvent(currentType);
                 // 更新玩家信息显示
                 infoPanel.refreshData();
+                // 刷新资产表格
+                propertyPanel.refreshAssets();
             }
         });
     }
@@ -168,8 +169,15 @@ public class DashboardPanel extends JPanel {
     public void setCurrentPlayer(Player player) {
         this.currentPlayer = player;
         this.eventProcessor = new EventProcessor(player);
-        //设置 UI 刷新回调
-        this.eventProcessor.setUiRefreshCallback(() -> infoPanel.refreshData());
+        // 设置 UI 刷新回调
+        this.eventProcessor.setUiRefreshCallback(() -> {
+            infoPanel.refreshData();
+            propertyPanel.refreshAssets();
+        });
+        // 设置资产添加回调
+        player.getAssetManager().setOnAssetAdded(asset -> {
+            propertyPanel.addAssetRow(asset);
+        });
     }
 
     /**
@@ -207,19 +215,17 @@ public class DashboardPanel extends JPanel {
             setBackground(MD_PRIMARY_CONTAINER); // 容器色背景
 
             TitledBorder titledBorder = new TitledBorder(
-                new LineBorder(MD_PRIMARY_CONTAINER, 0), // 边框颜色与背景一致，隐藏线条
-                "玩家信息",
-                TitledBorder.CENTER,
-                TitledBorder.TOP,
-                FONT_TITLE,
-                MD_ON_PRIMARY_CONTAINER // 标题颜色
+                    new LineBorder(MD_PRIMARY_CONTAINER, 0), // 边框颜色与背景一致，隐藏线条
+                    "玩家信息",
+                    TitledBorder.CENTER,
+                    TitledBorder.TOP,
+                    FONT_TITLE,
+                    MD_ON_PRIMARY_CONTAINER // 标题颜色
             );
             setBorder(
-                new CompoundBorder(
-                    new EmptyBorder(10, 20, 15, 20),
-                    titledBorder
-                )
-            );
+                    new CompoundBorder(
+                            new EmptyBorder(10, 20, 15, 20),
+                            titledBorder));
 
             cashLabel = createInfoLabel("现金: 0");
             salaryLabel = createInfoLabel("工资: 0");
@@ -239,9 +245,8 @@ public class DashboardPanel extends JPanel {
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON
-            );
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(getBackground());
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), 24, 24); // 24px 圆角
         }
@@ -258,17 +263,13 @@ public class DashboardPanel extends JPanel {
             if (currentPlayer != null) {
                 cashLabel.setText("现金: " + currentPlayer.getCash() + "元");
                 salaryLabel.setText(
-                    "工资: " + currentPlayer.getSalary() + "元"
-                );
+                        "工资: " + currentPlayer.getSalary() + "元");
                 expensesLabel.setText(
-                    "月支出: " + currentPlayer.getMonthlyExpenses() + "元"
-                );
+                        "月支出: " + currentPlayer.getMonthlyExpenses() + "元");
                 passiveIncomeLabel.setText(
-                    "被动收入: " + currentPlayer.getPassiveIncome() + "元"
-                );
+                        "被动收入: " + currentPlayer.getPassiveIncome() + "元");
                 cashflowLabel.setText(
-                    "现金流: " + currentPlayer.calculateCashflow() + "元"
-                );
+                        "现金流: " + currentPlayer.calculateCashflow() + "元");
             }
         }
     }
@@ -289,10 +290,10 @@ public class DashboardPanel extends JPanel {
             setBorder(new LineBorder(MD_OUTLINE, 1, true));
 
             String[] columnNames = {
-                "资产名称",
-                "资产价值",
-                "贬值率",
-                "资产状态",
+                    "资产名称",
+                    "资产价值",
+                    "贬值率",
+                    "资产状态",
             };
 
             tableModel = new DefaultTableModel(columnNames, 0) {
@@ -323,18 +324,23 @@ public class DashboardPanel extends JPanel {
             ((JComponent) table
                     .getTableHeader()
                     .getDefaultRenderer()).setBorder(
-                new EmptyBorder(0, 0, 0, 0)
-            );
+                            new EmptyBorder(0, 0, 0, 0));
 
-            DefaultTableCellRenderer centerRenderer =
-                new DefaultTableCellRenderer();
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
             centerRenderer.setHorizontalAlignment(JLabel.CENTER);
             for (int i = 0; i < table.getColumnCount(); i++) {
                 table
-                    .getColumnModel()
-                    .getColumn(i)
-                    .setCellRenderer(centerRenderer);
+                        .getColumnModel()
+                        .getColumn(i)
+                        .setCellRenderer(centerRenderer);
             }
+
+            // 设置列宽，确保内容完整显示
+            table.getColumnModel().getColumn(0).setPreferredWidth(120); // 资产名称
+            table.getColumnModel().getColumn(1).setPreferredWidth(80); // 资产价值
+            table.getColumnModel().getColumn(2).setPreferredWidth(60); // 贬值率
+            table.getColumnModel().getColumn(3).setPreferredWidth(100); // 资产状态
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
             JScrollPane scrollPane = new JScrollPane(table);
             scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
@@ -344,23 +350,46 @@ public class DashboardPanel extends JPanel {
         }
 
         public void addProperty(
-            String name,
-            String value,
-            String depreciation,
-            String status
-        ) {
+                String name,
+                String value,
+                String depreciation,
+                String status) {
             tableModel.addRow(
-                new Object[] { name, value, depreciation, status }
-            );
+                    new Object[] { name, value, depreciation, status });
+        }
+
+        /**
+         * 添加资产行
+         */
+        public void addAssetRow(Asset asset) {
+            tableModel.addRow(new Object[] {
+                    asset.getType().getIcon() + " " + asset.getName(),
+                    asset.getCurrentValue() + "元",
+                    asset.getDepreciationRate(),
+                    asset.getStatus()
+            });
+        }
+
+        /**
+         * 刷新所有资产数据
+         */
+        public void refreshAssets() {
+            // 清空表格
+            tableModel.setRowCount(0);
+            // 重新添加所有资产
+            if (currentPlayer != null) {
+                for (Asset asset : currentPlayer.getAssetManager().getAssets()) {
+                    addAssetRow(asset);
+                }
+            }
         }
     }
 
     public void addProperty(
-        String name,
-        String value,
-        String depreciation,
-        String status
-    ) {
+            String name,
+            String value,
+            String depreciation,
+            String status) {
         propertyPanel.addProperty(name, value, depreciation, status);
     }
 }

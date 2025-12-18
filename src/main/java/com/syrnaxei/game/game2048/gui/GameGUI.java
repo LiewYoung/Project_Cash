@@ -3,74 +3,126 @@ package com.syrnaxei.game.game2048.gui;
 import com.syrnaxei.game.game2048.core.Board;
 import com.syrnaxei.game.game2048.core.GameConfig;
 import com.syrnaxei.game.game2048.core.MergeLogic;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.*;
 
 public class GameGUI extends JFrame {
+
     private final Board board;
     private final MergeLogic mergeLogic;
     private TilePanel[][] tilePanels;
     private JLabel scoreLabel;
     private JLabel countdownLabel;
+    private javax.swing.Timer swingTimer;
+    private final AtomicBoolean gameActive = new AtomicBoolean(true);
 
-    ImageIcon gameIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/images/icon/game_icon2048.png")));
+    private static final ImageIcon gameIcon = createGameIcon();
 
+    private static ImageIcon createGameIcon() {
+        try {
+            return new ImageIcon(
+                Objects.requireNonNull(
+                    GameGUI.class.getResource("/images/icon/game_icon2048.png")
+                )
+            );
+        } catch (Exception e) {
+            System.err.println("加载游戏图标失败: " + e.getMessage());
+            return null;
+        }
+    }
 
     public GameGUI(Board board, MergeLogic mergeLogic) {
         this.board = board;
         this.mergeLogic = mergeLogic;
-        initializeUI();
-        setupKeyListener();
-        refreshBoard(); // 显示初始方块
-        startCountdown();
+
+        try {
+            initializeUI();
+            setupWindowListener();
+            setupKeyListener();
+            startCountdown();
+        } catch (Exception e) {
+            handleInitializationError(e);
+        }
     }
 
-    private void initializeUI() {
+    private void initializeUI() throws Exception {
         setTitle("Project_Cash_FUNGAME2048");
-        setIconImage(gameIcon.getImage());
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        if (gameIcon != null) {
+            setIconImage(gameIcon.getImage());
+        }
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // 防止直接关闭
         setResizable(false);
+        setLocationRelativeTo(null);
 
         // 创建主面板
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // 创建顶部面板（分数）
-        JPanel topPanel = new JPanel(new BorderLayout());
-
-        //分数标签
-        scoreLabel = new JLabel("Score: 0");
-        scoreLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        topPanel.add(scoreLabel, BorderLayout.WEST);
-
-        // 倒计时
-        JPanel countdownPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        countdownPanel.setOpaque(false);
-        // 初始化倒计时标签
-        countdownLabel = new JLabel("Countdown: " + GameConfig.remainingSeconds + "s");
-        countdownLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        countdownLabel.setForeground(Color.RED);
-        countdownPanel.add(countdownLabel);
-        topPanel.add(countdownPanel, BorderLayout.EAST);
-
-        //add topPanel to mainPanel
+        // 创建顶部面板（分数和倒计时）
+        JPanel topPanel = createTopPanel();
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
         // 创建游戏网格面板
-        JPanel gridPanel = new JPanel(new GridLayout(GameConfig.BOARD_SIZE, GameConfig.BOARD_SIZE, 5, 5));
-        gridPanel.setBackground(new Color(150, 170, 185)); //背景颜色
-        gridPanel.setPreferredSize(new Dimension(400, 400));
-        gridPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel gridPanel = createGridPanel();
+        mainPanel.add(gridPanel, BorderLayout.CENTER);
 
-        // 初始化方块面板数组
-        tilePanels = new TilePanel[GameConfig.BOARD_SIZE][GameConfig.BOARD_SIZE];
+        // 创建底部面板（说明）
+        JPanel bottomPanel = createBottomPanel();
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
-        // 创建每个方格
+        add(mainPanel);
+        pack();
+    }
+
+    private JPanel createTopPanel() {
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 10, 0));
+
+        // 分数面板
+        JPanel scorePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JLabel scoreText = new JLabel("分数: ");
+        scoreText.setFont(new Font("微软雅黑", Font.BOLD, 16));
+        scoreLabel = new JLabel("0");
+        scoreLabel.setFont(new Font("微软雅黑", Font.BOLD, 20));
+        scoreLabel.setForeground(new Color(0, 100, 0));
+        scorePanel.add(scoreText);
+        scorePanel.add(scoreLabel);
+        topPanel.add(scorePanel, BorderLayout.WEST);
+
+        // 倒计时面板
+        JPanel countdownPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JLabel countdownText = new JLabel("剩余时间: ");
+        countdownText.setFont(new Font("微软雅黑", Font.BOLD, 16));
+        countdownLabel = new JLabel(
+            String.valueOf(board.getRemainingSeconds())
+        );
+        countdownLabel.setFont(new Font("微软雅黑", Font.BOLD, 20));
+        countdownLabel.setForeground(new Color(200, 0, 0));
+        countdownPanel.add(countdownText);
+        countdownPanel.add(countdownLabel);
+        topPanel.add(countdownPanel, BorderLayout.EAST);
+
+        return topPanel;
+    }
+
+    private JPanel createGridPanel() {
+        JPanel gridPanel = new JPanel(
+            new GridLayout(GameConfig.BOARD_SIZE, GameConfig.BOARD_SIZE, 10, 10)
+        );
+        gridPanel.setBorder(
+            BorderFactory.createLineBorder(new Color(187, 173, 160), 5)
+        );
+        gridPanel.setBackground(new Color(187, 173, 160));
+
+        tilePanels =
+            new TilePanel[GameConfig.BOARD_SIZE][GameConfig.BOARD_SIZE];
         for (int i = 0; i < GameConfig.BOARD_SIZE; i++) {
             for (int j = 0; j < GameConfig.BOARD_SIZE; j++) {
                 tilePanels[i][j] = new TilePanel();
@@ -78,105 +130,217 @@ public class GameGUI extends JFrame {
             }
         }
 
-        mainPanel.add(gridPanel, BorderLayout.CENTER);
-
-        // 创建底部面板（说明）
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JLabel instructionLabel = new JLabel("Use WASD or Arrow Keys to move tiles , press R to reset the board");
-        instructionLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        bottomPanel.add(instructionLabel);
-        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
-
-        add(mainPanel);
-        pack();
-        setLocationRelativeTo(null);
+        refreshBoard();
+        return gridPanel;
     }
 
-    //refreshButton creat fuc
-    private javax.swing.Timer swingTimer;
+    private JPanel createBottomPanel() {
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+        JLabel instructionLabel = new JLabel(
+            "使用方向键移动方块，相同数字合并，获得2048获胜！"
+        );
+        instructionLabel.setFont(new Font("微软雅黑", Font.PLAIN, 14));
+        bottomPanel.add(instructionLabel);
+        return bottomPanel;
+    }
+
+    private void setupWindowListener() {
+        addWindowListener(
+            new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    handleWindowClosing();
+                }
+            }
+        );
+    }
+
+    private void handleWindowClosing() {
+        if (gameActive.get()) {
+            int result = JOptionPane.showConfirmDialog(
+                this,
+                "游戏仍在进行中，确定要退出吗？",
+                "确认退出",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (result == JOptionPane.YES_OPTION) {
+                cleanupAndClose();
+            }
+        } else {
+            cleanupAndClose();
+        }
+    }
+
+    private void cleanupAndClose() {
+        board.triggerGameOver(); // 通知游戏结束
+        dispose(); // 关闭窗口
+    }
 
     private void startCountdown() {
-        if (swingTimer != null) {
+        // 确保在EDT中执行
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(this::startCountdown);
+            return;
+        }
+
+        swingTimer = new javax.swing.Timer(1000, e -> updateCountdown());
+        swingTimer.start();
+    }
+
+    private void updateCountdown() {
+        if (!gameActive.get()) {
+            return;
+        }
+
+        board.decrementRemainingSeconds();
+        updateCountdownDisplay();
+
+        if (board.isTimeUp()) {
+            stopCountdown();
+            onCountdownFinish();
+        }
+    }
+
+    private void updateCountdownDisplay() {
+        int seconds = board.getRemainingSeconds();
+        countdownLabel.setText(String.valueOf(seconds));
+
+        // 根据剩余时间改变颜色
+        if (seconds <= 10) {
+            countdownLabel.setForeground(Color.RED);
+        } else if (seconds <= 20) {
+            countdownLabel.setForeground(Color.ORANGE);
+        } else {
+            countdownLabel.setForeground(new Color(0, 100, 0));
+        }
+    }
+
+    private void stopCountdown() {
+        if (swingTimer != null && swingTimer.isRunning()) {
             swingTimer.stop();
         }
-        countdownLabel.setText("Countdown: " + GameConfig.remainingSeconds + "s");
-
-        swingTimer = new javax.swing.Timer(1000, e -> {
-            GameConfig.remainingSeconds--;
-            if (GameConfig.remainingSeconds > 0) {
-                countdownLabel.setText(GameConfig.remainingSeconds + "s");
-            } else {
-                swingTimer.stop();
-                countdownLabel.setText("Time's up!");
-                onCountdownFinish();
-            }
-        });
-        swingTimer.start();
     }
 
     private void onCountdownFinish() {
         SwingUtilities.invokeLater(() -> {
-            board.triggerGameOver();
-            this.dispose();
+            if (gameActive.get()) {
+                countdownLabel.setText("Time's up!");
+                board.triggerGameOver();
+                showGameEndDialog("时间到！", board.getScore());
+            }
         });
     }
 
-
     private void setupKeyListener() {
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                boolean moved = false;
-                int[][] boardBefore = copyBoard(board.getBoard());
+        addKeyListener(
+            new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (!gameActive.get()) {
+                        return;
+                    }
 
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_W:
-                    case KeyEvent.VK_UP:
-                        mergeLogic.mergeUp();
-                        moved = !boardsEqual(boardBefore, board.getBoard());
-                        break;
-                    case KeyEvent.VK_S:
-                    case KeyEvent.VK_DOWN:
-                        mergeLogic.mergeDown();
-                        moved = !boardsEqual(boardBefore, board.getBoard());
-                        break;
-                    case KeyEvent.VK_A:
-                    case KeyEvent.VK_LEFT:
-                        mergeLogic.mergeLeft();
-                        moved = !boardsEqual(boardBefore, board.getBoard());
-                        break;
-                    case KeyEvent.VK_D:
-                    case KeyEvent.VK_RIGHT:
-                        mergeLogic.mergeRight();
-                        moved = !boardsEqual(boardBefore, board.getBoard());
-                        break;
-                }
+                    try {
+                        int[][] originalBoard = copyBoard(board.getBoard());
 
-                if (moved) {
-                    board.addNumber();
-                    refreshBoard();
-                    checkGameOver();
+                        switch (e.getKeyCode()) {
+                            case KeyEvent.VK_UP:
+                            case KeyEvent.VK_W:
+                                mergeLogic.mergeUp();
+                                break;
+                            case KeyEvent.VK_DOWN:
+                            case KeyEvent.VK_S:
+                                mergeLogic.mergeDown();
+                                break;
+                            case KeyEvent.VK_LEFT:
+                            case KeyEvent.VK_A:
+                                mergeLogic.mergeLeft();
+                                break;
+                            case KeyEvent.VK_RIGHT:
+                            case KeyEvent.VK_D:
+                                mergeLogic.mergeRight();
+                                break;
+                            case KeyEvent.VK_R:
+                                // R键重置游戏
+                                if (e.isControlDown()) {
+                                    resetGame();
+                                }
+                                return;
+                            case KeyEvent.VK_ESCAPE:
+                                // ESC键退出
+                                handleWindowClosing();
+                                return;
+                            default:
+                                return;
+                        }
+
+                        // 检查棋盘是否有变化
+                        if (!boardsEqual(originalBoard, board.getBoard())) {
+                            board.addNumber();
+                            refreshBoard();
+                            checkGameOver();
+                            scoreLabel.setText(
+                                String.valueOf(board.getScore())
+                            );
+
+                            // 检查是否达到2048
+                            if (board.hasReached2048()) {
+                                SwingUtilities.invokeLater(() -> {
+                                    if (gameActive.get()) {
+                                        board.triggerGameOver();
+                                        showGameEndDialog(
+                                            "恭喜！你达到了2048！",
+                                            board.getScore()
+                                        );
+                                    }
+                                });
+                            }
+                        }
+                    } catch (Exception ex) {
+                        handleGameError("处理按键事件时发生错误", ex);
+                    }
                 }
             }
-        });
+        );
+
         setFocusable(true);
         requestFocusInWindow();
     }
 
-    // 复制棋盘用于比较
-    private int[][] copyBoard(int[][] board) {
-        int[][] copy = new int[board.length][board[0].length];
-        for (int i = 0; i < board.length; i++) {
-            copy[i] = board[i].clone();
+    private void resetGame() {
+        try {
+            board.resetBoard();
+            refreshBoard();
+            scoreLabel.setText("0");
+            updateCountdownDisplay();
+            gameActive.set(true);
+            requestFocusInWindow();
+        } catch (Exception e) {
+            handleGameError("重置游戏时发生错误", e);
+        }
+    }
+
+    private int[][] copyBoard(int[][] source) {
+        int[][] copy = new int[source.length][source[0].length];
+        for (int i = 0; i < source.length; i++) {
+            System.arraycopy(source[i], 0, copy[i], 0, source[0].length);
         }
         return copy;
     }
 
-    // 比较两个棋盘是否相同
-    private boolean boardsEqual(int[][] a, int[][] b) {
-        for (int i = 0; i < a.length; i++) {
-            for (int j = 0; j < a[i].length; j++) {
-                if (a[i][j] != b[i][j]) {
+    private boolean boardsEqual(int[][] board1, int[][] board2) {
+        if (
+            board1.length != board2.length ||
+            board1[0].length != board2[0].length
+        ) {
+            return false;
+        }
+        for (int i = 0; i < board1.length; i++) {
+            for (int j = 0; j < board1[0].length; j++) {
+                if (board1[i][j] != board2[i][j]) {
                     return false;
                 }
             }
@@ -185,34 +349,87 @@ public class GameGUI extends JFrame {
     }
 
     public void refreshBoard() {
-        int[][] board = this.board.getBoard();
-        int score = this.board.getScore();
-
-        // 更新分数显示
-        SwingUtilities.invokeLater(() -> {
-            scoreLabel.setText("Score: " + score);
-
-            // 更新方格显示
-            for (int i = 0; i < GameConfig.BOARD_SIZE; i++) {
-                for (int j = 0; j < GameConfig.BOARD_SIZE; j++) {
-                    tilePanels[i][j].setValue(board[i][j]);
-                }
+        int[][] currentBoard = board.getBoard();
+        for (int i = 0; i < GameConfig.BOARD_SIZE; i++) {
+            for (int j = 0; j < GameConfig.BOARD_SIZE; j++) {
+                tilePanels[i][j].setValue(currentBoard[i][j]);
             }
-        });
+        }
     }
 
-    //Project_Cash可能需要用到的方法
     private void checkGameOver() {
         if (board.isGameOver()) {
             SwingUtilities.invokeLater(() -> {
-                board.triggerGameOver();
-                this.dispose();
+                if (gameActive.get()) {
+                    board.triggerGameOver();
+                    showGameEndDialog("游戏结束！", board.getScore());
+                }
             });
         }
     }
 
-    // 自定义方块面板类
+    private void showGameEndDialog(String message, int score) {
+        gameActive.set(false);
+        stopCountdown();
+
+        String result = message + "\n最终得分: " + score;
+        int option = JOptionPane.showConfirmDialog(
+            this,
+            result + "\n\n是否重新开始？",
+            "游戏结束",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.INFORMATION_MESSAGE
+        );
+
+        if (option == JOptionPane.YES_OPTION) {
+            resetGame();
+        } else {
+            cleanupAndClose();
+        }
+    }
+
+    private void handleGameError(String message, Exception ex) {
+        System.err.println(message + ": " + ex.getMessage());
+        ex.printStackTrace();
+
+        JOptionPane.showMessageDialog(
+            this,
+            message + "，游戏将关闭。",
+            "错误",
+            JOptionPane.ERROR_MESSAGE
+        );
+
+        cleanupAndClose();
+    }
+
+    private void handleInitializationError(Exception ex) {
+        System.err.println("初始化游戏界面失败: " + ex.getMessage());
+        ex.printStackTrace();
+
+        JOptionPane.showMessageDialog(
+            null,
+            "初始化游戏界面失败: " + ex.getMessage() + "\n游戏无法启动。",
+            "严重错误",
+            JOptionPane.ERROR_MESSAGE
+        );
+
+        System.exit(1);
+    }
+
+    public void dispose() {
+        try {
+            gameActive.set(false);
+            stopCountdown();
+            super.dispose();
+        } catch (Exception e) {
+            System.err.println("关闭窗口时发生错误: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private static class TilePanel extends JPanel {
+
+        private static final Color EMPTY_COLOR = new Color(205, 193, 180);
         private JLabel valueLabel;
 
         public TilePanel() {
@@ -220,21 +437,22 @@ public class GameGUI extends JFrame {
         }
 
         private void initializeTile() {
-            setPreferredSize(new Dimension(90, 90));
-            setBackground(new Color(180, 200, 215)); // 空方块背景色
             setLayout(new BorderLayout());
+            setBackground(EMPTY_COLOR);
+            setPreferredSize(new Dimension(80, 80));
+            setBorder(
+                BorderFactory.createLineBorder(new Color(187, 173, 160), 5)
+            );
 
             valueLabel = new JLabel("", SwingConstants.CENTER);
-            valueLabel.setFont(new Font("Arial", Font.BOLD, 24));
+            valueLabel.setFont(new Font("微软雅黑", Font.BOLD, 24));
             add(valueLabel, BorderLayout.CENTER);
-
-            setBorder(BorderFactory.createRaisedBevelBorder());
         }
 
         public void setValue(int value) {
             if (value == 0) {
                 valueLabel.setText("");
-                setBackground(new Color(180, 200, 215)); // 空方块背景色
+                setBackground(EMPTY_COLOR);
             } else {
                 valueLabel.setText(String.valueOf(value));
                 setColorByValue(value);
@@ -242,56 +460,60 @@ public class GameGUI extends JFrame {
         }
 
         private void setColorByValue(int value) {
+            Color bgColor;
+            Color fgColor = Color.BLACK;
+
             switch (value) {
                 case 2:
-                    setBackground(new Color(220, 235, 245)); // 浅蓝（主色浅化）
-                    valueLabel.setForeground(Color.BLACK);
+                    bgColor = new Color(238, 228, 218);
                     break;
                 case 4:
-                    setBackground(new Color(180, 215, 235)); // 淡蓝（主色弱化）
-                    valueLabel.setForeground(Color.BLACK);
+                    bgColor = new Color(237, 224, 200);
                     break;
                 case 8:
-                    setBackground(new Color(100, 160, 205)); // 浅湖蓝（主色微调）
-                    valueLabel.setForeground(Color.WHITE);
+                    bgColor = new Color(242, 177, 121);
+                    fgColor = Color.WHITE;
                     break;
                 case 16:
-                    setBackground(new Color(50, 130, 195));  // 天蓝色（接近主色）
-                    valueLabel.setForeground(Color.WHITE);
+                    bgColor = new Color(245, 149, 99);
+                    fgColor = Color.WHITE;
                     break;
                 case 32:
-                    setBackground(new Color(1, 110, 190));   // 主色强化（蓝调加深）
-                    valueLabel.setForeground(Color.WHITE);
+                    bgColor = new Color(246, 124, 95);
+                    fgColor = Color.WHITE;
                     break;
                 case 64:
-                    setBackground(new Color(1, 96, 176));    // 核心主色
-                    valueLabel.setForeground(Color.WHITE);
+                    bgColor = new Color(246, 94, 59);
+                    fgColor = Color.WHITE;
                     break;
                 case 128:
-                    setBackground(new Color(0, 85, 155));    // 主色加深
-                    valueLabel.setForeground(Color.WHITE);
+                    bgColor = new Color(237, 207, 114);
+                    fgColor = Color.WHITE;
                     break;
                 case 256:
-                    setBackground(new Color(0, 75, 140));    // 主色进一步加深
-                    valueLabel.setForeground(Color.WHITE);
+                    bgColor = new Color(237, 204, 97);
+                    fgColor = Color.WHITE;
                     break;
                 case 512:
-                    setBackground(new Color(0, 65, 125));    // 深蓝
-                    valueLabel.setForeground(Color.WHITE);
+                    bgColor = new Color(237, 200, 80);
+                    fgColor = Color.WHITE;
                     break;
                 case 1024:
-                    setBackground(new Color(0, 55, 110));    // 更深蓝
-                    valueLabel.setForeground(Color.WHITE);
+                    bgColor = new Color(237, 197, 63);
+                    fgColor = Color.WHITE;
                     break;
                 case 2048:
-                    setBackground(new Color(0, 45, 95));     // 最深蓝
-                    valueLabel.setForeground(Color.WHITE);
+                    bgColor = new Color(0, 45, 95);
+                    fgColor = Color.WHITE;
                     break;
                 default:
-                    setBackground(new Color(30, 30, 40));    // 暗蓝色
-                    valueLabel.setForeground(Color.WHITE);
+                    bgColor = new Color(60, 58, 50);
+                    fgColor = Color.WHITE;
                     break;
             }
+
+            setBackground(bgColor);
+            valueLabel.setForeground(fgColor);
         }
     }
 }

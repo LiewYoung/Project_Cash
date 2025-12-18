@@ -1,11 +1,10 @@
 package com.syrnaxei.game.game2048.core;
 
-import java.util.Arrays;
-
 public class MergeLogic {
+
     private final Board board;
 
-    public MergeLogic(Board board){
+    public MergeLogic(Board board) {
         this.board = board;
     }
 
@@ -29,7 +28,7 @@ public class MergeLogic {
 
     public void mergeLeft() {
         int[][] data = board.getBoard();
-        for(int row = 0; row < GameConfig.BOARD_SIZE; row++){
+        for (int row = 0; row < GameConfig.BOARD_SIZE; row++) {
             int[] currRow = data[row];
             int[] compacted = compactLeft(currRow);
             int[] merged = adjacentLeft(compacted);
@@ -40,9 +39,9 @@ public class MergeLogic {
 
     public void mergeDown() {
         int[][] data = board.getBoard();
-        for (int col = 0; col < GameConfig.BOARD_SIZE; col++){
+        for (int col = 0; col < GameConfig.BOARD_SIZE; col++) {
             // 提取当前列
-            int[] tempCol = extractCol(data,col);
+            int[] tempCol = extractCol(data, col);
             int[] compactedCol = compactDown(tempCol); // 向下紧凑
             int[] mergedCol = adjacentDown(compactedCol); // 向下合并
             // 写回列
@@ -53,11 +52,11 @@ public class MergeLogic {
 
     public void mergeUp() {
         int[][] data = board.getBoard();
-        for(int col = 0;col < GameConfig.BOARD_SIZE;col++){
-            int[] tempCol = extractCol(data,col);
+        for (int col = 0; col < GameConfig.BOARD_SIZE; col++) {
+            int[] tempCol = extractCol(data, col);
             int[] compactedCol = compactUp(tempCol);
             int[] mergedCol = adjacentUp(compactedCol);
-            writeColumn(data,mergedCol,col);
+            writeColumn(data, mergedCol, col);
         }
         board.setBoard(data);
     }
@@ -68,18 +67,18 @@ public class MergeLogic {
         int index = GameConfig.BOARD_SIZE - 1;
         int i = GameConfig.BOARD_SIZE - 1;
 
-        while(i >= 0){
+        while (i >= 0) {
             int tempNum = compactedRow[i];
-            if(tempNum == 0){
+            if (tempNum == 0) {
                 i--;
                 continue;
             }
-            if(i - 1 >= 0 && tempNum == compactedRow[i - 1]){
+            if (i - 1 >= 0 && tempNum == compactedRow[i - 1]) {
                 newRow[index] = tempNum * 2;
-                board.setScore(tempNum * 2);
+                board.addScore(tempNum * 2);
                 index--;
                 i -= 2;
-            }else{
+            } else {
                 newRow[index] = tempNum;
                 index--;
                 i--;
@@ -89,23 +88,25 @@ public class MergeLogic {
         return newRow;
     }
 
-    public int[] adjacentLeft(int[] compactedRow){
+    public int[] adjacentLeft(int[] compactedRow) {
         int[] newRow = new int[GameConfig.BOARD_SIZE];
         int index = 0;
         int i = 0;
 
-        while(i < GameConfig.BOARD_SIZE){
+        while (i < GameConfig.BOARD_SIZE) {
             int tempNum = compactedRow[i];
-            if(tempNum == 0){
+            if (tempNum == 0) {
                 i++;
                 continue;
             }
-            if(i + 1 < GameConfig.BOARD_SIZE && tempNum == compactedRow[i + 1]){
+            if (
+                i + 1 < GameConfig.BOARD_SIZE && tempNum == compactedRow[i + 1]
+            ) {
                 newRow[index] = tempNum * 2;
-                board.setScore(tempNum * 2);
+                board.addScore(tempNum * 2);
                 index++;
                 i += 2;
-            }else{
+            } else {
                 newRow[index] = tempNum;
                 index++;
                 i++;
@@ -114,7 +115,7 @@ public class MergeLogic {
         return newRow;
     }
 
-    public int[] adjacentDown(int[] compactedCol){
+    public int[] adjacentDown(int[] compactedCol) {
         int[] newCol = new int[GameConfig.BOARD_SIZE];
         int index = GameConfig.BOARD_SIZE - 1;
         int i = GameConfig.BOARD_SIZE - 1;
@@ -125,9 +126,9 @@ public class MergeLogic {
                 i--;
                 continue;
             }
-            if (i - 1 >= 0 &&  tempNum == compactedCol[i - 1]) {
+            if (i - 1 >= 0 && tempNum == compactedCol[i - 1]) {
                 newCol[index] = tempNum * 2;
-                board.setScore(tempNum * 2);
+                board.addScore(tempNum * 2);
                 index--;
                 i -= 2;
             } else {
@@ -139,7 +140,7 @@ public class MergeLogic {
         return newCol;
     }
 
-    public int[] adjacentUp(int[] compactedCol){
+    public int[] adjacentUp(int[] compactedCol) {
         int[] newCol = new int[GameConfig.BOARD_SIZE];
         int index = 0;
         int i = 0;
@@ -150,9 +151,11 @@ public class MergeLogic {
                 i++;
                 continue;
             }
-            if (i + 1 < GameConfig.BOARD_SIZE &&  tempNum == compactedCol[i + 1]) {
+            if (
+                i + 1 < GameConfig.BOARD_SIZE && tempNum == compactedCol[i + 1]
+            ) {
                 newCol[index] = tempNum * 2;
-                board.setScore(tempNum * 2);
+                board.addScore(tempNum * 2);
                 index++;
                 i += 2;
             } else {
@@ -165,10 +168,10 @@ public class MergeLogic {
     }
 
     //==================================  compact方法  ==================================
-    private int[] compactRight(int[] row){
+    private int[] compactRight(int[] row) {
         int[] newRow = new int[GameConfig.BOARD_SIZE];
         int index = GameConfig.BOARD_SIZE - 1; // 从右侧开始填充
-        for (int i = GameConfig.BOARD_SIZE - 1;i >= 0;i--) {
+        for (int i = GameConfig.BOARD_SIZE - 1; i >= 0; i--) {
             if (row[i] != 0) {
                 newRow[index--] = row[i];
             }
@@ -176,21 +179,21 @@ public class MergeLogic {
         return newRow;
     }
 
-    private int[] compactLeft(int[] row){
+    private int[] compactLeft(int[] row) {
         int[] newRow = new int[GameConfig.BOARD_SIZE];
         int index = 0;
-        for(int num : row){
-            if(num != 0){
+        for (int num : row) {
+            if (num != 0) {
                 newRow[index++] = num;
             }
         }
         return newRow;
     }
 
-    private int[] compactDown(int[] col){
+    private int[] compactDown(int[] col) {
         int[] newCol = new int[GameConfig.BOARD_SIZE];
         int index = GameConfig.BOARD_SIZE - 1;
-        for (int i = GameConfig.BOARD_SIZE - 1;i >= 0;i--) {
+        for (int i = GameConfig.BOARD_SIZE - 1; i >= 0; i--) {
             if (col[i] != 0) {
                 newCol[index--] = col[i];
             }
@@ -198,7 +201,7 @@ public class MergeLogic {
         return newCol;
     }
 
-    private int[] compactUp(int[] col){
+    private int[] compactUp(int[] col) {
         int[] newCol = new int[GameConfig.BOARD_SIZE];
         int index = 0;
         for (int num : col) {
@@ -210,18 +213,17 @@ public class MergeLogic {
     }
 
     //===========================  UP && DOWNs extra works  ===========================
-    private int[] extractCol(int[][] data,int col){
+    private int[] extractCol(int[][] data, int col) {
         int[] extractedcol = new int[GameConfig.BOARD_SIZE];
-        for(int row = 0;row < GameConfig.BOARD_SIZE;row++){
+        for (int row = 0; row < GameConfig.BOARD_SIZE; row++) {
             extractedcol[row] = data[row][col];
         }
         return extractedcol;
     }
 
-    private void writeColumn(int[][] data,int[] newCol,int col){
-        for(int row = 0;row < GameConfig.BOARD_SIZE;row++){
+    private void writeColumn(int[][] data, int[] newCol, int col) {
+        for (int row = 0; row < GameConfig.BOARD_SIZE; row++) {
             data[row][col] = newCol[row];
         }
     }
-
 }
