@@ -52,7 +52,7 @@ public class GameGUI extends JFrame {
     }
 
     private void initializeUI() throws Exception {
-        setTitle("Project_Cash_FUNGAME2048");
+        setTitle("Project_Cash_Game_2048");
         if (gameIcon != null) {
             setIconImage(gameIcon.getImage());
         }
@@ -229,7 +229,7 @@ public class GameGUI extends JFrame {
             if (gameActive.get()) {
                 countdownLabel.setText("Time's up!");
                 board.triggerGameOver();
-                showGameEndDialog("时间到！", board.getScore());
+                dispose();
             }
         });
     }
@@ -269,6 +269,10 @@ public class GameGUI extends JFrame {
                                     resetGame();
                                 }
                                 return;
+                            case KeyEvent.VK_C:
+                                board.boardTest();
+                                refreshBoard();
+                                break;
                             case KeyEvent.VK_ESCAPE:
                                 // ESC键退出
                                 handleWindowClosing();
@@ -291,10 +295,7 @@ public class GameGUI extends JFrame {
                                 SwingUtilities.invokeLater(() -> {
                                     if (gameActive.get()) {
                                         board.triggerGameOver();
-                                        showGameEndDialog(
-                                            "恭喜！你达到了2048！",
-                                            board.getScore()
-                                        );
+                                        dispose();
                                     }
                                 });
                             }
@@ -362,29 +363,9 @@ public class GameGUI extends JFrame {
             SwingUtilities.invokeLater(() -> {
                 if (gameActive.get()) {
                     board.triggerGameOver();
-                    showGameEndDialog("游戏结束！", board.getScore());
+                    dispose();
                 }
             });
-        }
-    }
-
-    private void showGameEndDialog(String message, int score) {
-        gameActive.set(false);
-        stopCountdown();
-
-        String result = message + "\n最终得分: " + score;
-        int option = JOptionPane.showConfirmDialog(
-            this,
-            result + "\n\n是否重新开始？",
-            "游戏结束",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.INFORMATION_MESSAGE
-        );
-
-        if (option == JOptionPane.YES_OPTION) {
-            resetGame();
-        } else {
-            cleanupAndClose();
         }
     }
 

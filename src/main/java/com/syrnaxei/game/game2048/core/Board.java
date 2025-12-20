@@ -66,6 +66,7 @@ public class Board {
 
     /**
      * 添加分数到当前总分
+     *
      * @param score 要增加的分数
      */
     public void addScore(int score) {
@@ -76,6 +77,7 @@ public class Board {
 
     /**
      * 设置总分为指定值（主要用于重置）
+     *
      * @param score 新的总分
      */
     public void setScore(int score) {
@@ -190,5 +192,25 @@ public class Board {
         } catch (Exception e) {
             throw new RuntimeException("触发游戏结束时发生错误", e);
         }
+
+    }
+
+    //==================================  测试 方法  ====================================
+    public void boardTest() {
+        String input = javax.swing.JOptionPane.showInputDialog("请输入要设置的分数:");
+        if(input != null && !input.trim().isEmpty()) {
+            try {
+                int newScore = Integer.parseInt(input);
+                if(newScore >= 0) {
+                    this.score = newScore;
+                    javax.swing.JOptionPane.showMessageDialog(null, "分数已设置为: " + newScore);
+                } else {
+                    javax.swing.JOptionPane.showMessageDialog(null, "分数不能为负数!");
+                }
+            } catch(NumberFormatException e) {
+                javax.swing.JOptionPane.showMessageDialog(null, "输入格式错误!");
+            }
+        }
     }
 }
+

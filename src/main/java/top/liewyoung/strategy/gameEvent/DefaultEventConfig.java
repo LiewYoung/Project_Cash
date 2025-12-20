@@ -57,6 +57,7 @@ public class DefaultEventConfig {
                                 new GuessNumberEvent(),
                                 new QuizEvent(),
                                 new ReactionEvent(),
-                                new Game2048Event());
+                                new Game2048Event(),
+                                new GameVFEvent());
         }
 }
