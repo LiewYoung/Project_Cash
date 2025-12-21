@@ -15,7 +15,7 @@ import java.net.http.HttpResponse;
  * @author LiewYoung
  * @since 2025/12/18
  */
-public class BargainAgent {
+public class BargainAgent implements AgentDo {
 
     private final Requests requests;
     private ChatRequest chatRequest;

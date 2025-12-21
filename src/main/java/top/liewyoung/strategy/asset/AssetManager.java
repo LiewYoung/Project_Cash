@@ -9,14 +9,26 @@ import java.util.function.Consumer;
 /**
  * 资产管理器
  * 管理玩家的所有资产
- * 
+ *
  * @author LiewYoung
  * @since 2025/12/18
  */
 public class AssetManager {
 
     private final List<Asset> assets = new ArrayList<>();
+
+
+    /**
+     * 函数式接口
+     *
+     * 资产添加
+     */
     private Consumer<Asset> onAssetAdded;
+    /**
+     * 函数式接口
+     *
+     * 资产已移除
+     */
     private Consumer<Asset> onAssetRemoved;
     private Runnable onAssetsUpdated;
 
@@ -98,7 +110,6 @@ public class AssetManager {
             onAssetsUpdated.run();
         }
     }
-
 
 
     public void setOnAssetAdded(Consumer<Asset> callback) {

@@ -10,8 +10,8 @@ import top.liewyoung.view.component.CircleImageLabel;
 import top.liewyoung.view.component.MDbutton;
 
 /**
- * 关于界面
- *
+ * 关于界面<br>
+ *<b>已经弃用</b>
  * @author LiewYoung
  * @since 2025/12/14
  */

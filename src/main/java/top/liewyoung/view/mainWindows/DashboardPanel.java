@@ -94,10 +94,10 @@ public class DashboardPanel extends JPanel {
         helpButton.addActionListener(e -> {
             SwingUtilities.invokeLater(() -> {
                 JFrame frame = new JFrame("关于");
-                frame.add(new Setting());
+                frame.add(AboutKt.getAboutPanel());
+                frame.setSize(1200, 835);
                 frame.setLocation(300, 100);
                 frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                frame.pack();
                 frame.setVisible(true);
             });
         });

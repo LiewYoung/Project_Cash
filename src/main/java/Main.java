@@ -1,3 +1,4 @@
+import com.formdev.flatlaf.FlatLightLaf;
 import top.liewyoung.view.mainWindows.HomePageComposeKt;
 
 /**
@@ -8,6 +9,7 @@ import top.liewyoung.view.mainWindows.HomePageComposeKt;
  */
 public class Main {
     public static void main(String[] args) {
+        FlatLightLaf.setup();
         // 使用 Compose 版本的 HomePage
         HomePageComposeKt.main();
     }
