@@ -18,12 +18,15 @@ dependencies {
     // 1. 基础工具类
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
     implementation "com.formdev:flatlaf:3.7"
+    // 核心 Polyglot 支持
+    implementation("org.graalvm.polyglot:polyglot:25.0.1")
+    // Python 语言支持
+    implementation("org.graalvm.polyglot:python:25.0.1")
 
     // 2. Kotlin JVM 标准库 (非 Android 版)
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
-    // 3. Compose Desktop 核心 (这才是你需要的)
-    // 它会自动引入适合 Windows/macOS/Linux 的渲染引擎 Skiko
+    // 3. Compose Desktop 核心
     implementation compose.desktop.currentOs
     implementation compose.material3
 }
@@ -34,7 +37,7 @@ java {
     }
 }
 
-// 桌面运行配置
+
 compose.desktop {
     application {
         mainClass = "top.liewyoung.Main"

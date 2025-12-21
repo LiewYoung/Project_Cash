@@ -148,7 +148,7 @@ public class DashboardPanel extends JPanel {
 
             // 触发事件处理
             if (eventProcessor != null && !gameOver(currentPlayer)) {
-                currentPlayer.setCash(0);
+                //currentPlayer.setCash(0);
                 // 更新所有资产价值（每次骰子后）
                 currentPlayer.getAssetManager().updateAllAssets(dice);
                 eventProcessor.processEvent(currentType);

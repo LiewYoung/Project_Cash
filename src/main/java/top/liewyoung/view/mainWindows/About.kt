@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.formdev.flatlaf.FlatLightLaf
 import top.liewyoung.view.ColorSystem.AppTheme
 import top.liewyoung.view.Stater
+import top.liewyoung.view.displayFonts.sharpSans
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
 
@@ -100,8 +101,8 @@ fun cardFactory(name: String,
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.Start
         ){
-            Text(name, fontWeight = FontWeight.Bold, fontSize = 24.sp)
-            Text(desc, fontWeight = FontWeight.Medium,fontSize = 16.sp)
+            Text(name, fontWeight = FontWeight.Bold, fontSize = 24.sp, fontFamily = sharpSans)
+            Text(desc, fontWeight = FontWeight.Medium,fontSize = 16.sp, fontFamily = sharpSans)
         }
     }
 }

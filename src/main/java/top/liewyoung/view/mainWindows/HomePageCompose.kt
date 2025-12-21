@@ -1,5 +1,6 @@
 package top.liewyoung.view.mainWindows
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.formdev.flatlaf.FlatLightLaf
 import top.liewyoung.view.ColorSystem.AppTheme
 import top.liewyoung.view.Stater
+import top.liewyoung.view.displayFonts.sharpSans
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
 
@@ -77,6 +80,7 @@ fun getHomePanel(frame: JFrame): ComposePanel {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.fillMaxSize()
+                        .background(color = MaterialTheme.colorScheme.surface)
                         .focusable( true)
                         .clickable(enabled = true, onClick = {})
                         .onKeyEvent { keyEvent ->
@@ -88,6 +92,7 @@ fun getHomePanel(frame: JFrame): ComposePanel {
 
                         }
                 ) {
+
                     Column(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -99,7 +104,8 @@ fun getHomePanel(frame: JFrame): ComposePanel {
                             Text(
                                 "CashFlow",
                                 modifier = Modifier.align(Alignment.CenterVertically),
-                                fontSize = 48.sp, fontWeight = FontWeight.Bold
+                                fontSize = 48.sp, fontWeight = FontWeight.Bold,
+                                fontFamily = sharpSans
                             )
 
                             Button(onClick = {
@@ -115,7 +121,8 @@ fun getHomePanel(frame: JFrame): ComposePanel {
                         Text(
                             "CashFlow是一款基于JavaSwing的桌面游戏，游戏内容由多名作者开发，游戏内容基于《Cash Flow》游戏",
                             fontWeight = FontWeight.Medium,
-                            fontSize = 16.sp
+                            fontSize = 16.sp,
+                            fontFamily = sharpSans
                         )
                     }
                 }
