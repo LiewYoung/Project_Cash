@@ -65,7 +65,7 @@ class Python3Engine {
             // 使用 eval 执行 Python 3 代码
             context?.eval("python", code)
             val result = outputStream.toString().trim()
-            if (result.isEmpty()) ">>> 执行成功 (Python 3.10+)" else result
+            result.ifEmpty { ">>> 执行成功 (Python 3.10+)" }
         } catch (e: Exception) {
             "语法错误: ${e.message}"
         }
@@ -169,7 +169,7 @@ fun PythonConsoleApp(engine: Python3Engine) {
                     .fillMaxWidth()
                     .onKeyEvent { event ->
                         if (event.key == Key.Enter && event.type == KeyEventType.KeyUp) {
-                            if(inputText.trim().equals("NewCli")) {
+                            if(inputText.trim() == "NewCli") {
                                 engine.restart()
                                 history.clear()
                                 history.add("NewCli" to ">>> 创建成功")
@@ -177,6 +177,8 @@ fun PythonConsoleApp(engine: Python3Engine) {
                             }else if(inputText.isNotBlank()){
                                 val response = engine.execute(inputText)
                                 history.add(inputText to response)
+                                inputText = ""
+                            }else{
                                 inputText = ""
                             }
                             true
