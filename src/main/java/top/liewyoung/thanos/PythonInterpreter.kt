@@ -92,10 +92,10 @@ fun PythonConsoleApp(engine: Python3Engine) {
         Text(
             "THANOS PYTHON 3 控制台",
             color = Color(0xFF7d45f8),
-            fontSize = 16.sp,
+            fontSize = 24.sp,
             style = TextStyle(
                 brush = Brush.linearGradient(colorList),
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.ExtraBold
             ),
             modifier = Modifier.padding(bottom = 8.dp)
         )
@@ -185,7 +185,7 @@ fun main() {
     FlatLightLaf.setup()
 
     SwingUtilities.invokeLater {
-        val frame = JFrame("Thanos - Python 3 Runtime")
+        val frame = JFrame("Thanos - Python 3 Console")
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.setSize(900, 700)
         frame.setContentPane(getCodePanel())
