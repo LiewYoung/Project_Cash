@@ -43,8 +43,8 @@ import javax.swing.SwingUtilities
  */
 fun getAboutPanel(player: Player,vararg context: Command): ComposePanel {
 
-    val commandConfig = CommandRegistry(null)
-    val engine by lazy { getEngine(commandConfig) }
+    val engine by lazy { getEngine() }
+    val commandConfig = CommandRegistry(engine)
 
     /**
      * 注册机
@@ -105,8 +105,6 @@ fun getAboutPanel(player: Player,vararg context: Command): ComposePanel {
                                 onClick = {
                                     SwingUtilities.invokeLater {
                                         val frame = JFrame("控制台")
-                                        val dialog = MDialog ("提示","由于引擎问题打开会耗时，请耐心等待", MDialog.MessageType.INFO)
-                                        dialog.isVisible = true
                                         registryEngine()
                                         frame.add(getCodePanel(engine))
                                         frame.setSize(800, 600)

@@ -4,7 +4,7 @@ data class Command(val name: String, val obj: Any)
 
 class CommandRegistry {
     /*命令注册表*/
-    private val commands = mutableListOf<Command>();
+    private val commands = CommandConfig;
     private var engine: Python3Engine? = null;
 
     constructor(engine: Python3Engine?){
@@ -17,19 +17,28 @@ class CommandRegistry {
      */
     fun registerAll(vararg command: Command) {
         for (c in command) {
-            commands.add(c)
+            commands.addCommand(c)
             engine?.inject(c.name, c.obj)
         }
     }
 
+    /**
+     * 注册单个命令
+     * @param [command] 命令
+     */
     fun register(command: Command) {
-        commands.add(command)
+        commands.addCommand(command)
         engine?.inject(command.name, command.obj)
     }
 
+    /** 修改引擎
+     * <b>无需管理命令注入，我们使用单例共享数据</b>
+     * @param [engine] 发动机
+     */
     fun changeEngine(engine: Python3Engine){
         this.engine = engine
-        for (c in commands) {
+        val config = commands.getCommands();
+        for (c in config) {
             engine.inject(c.name, c.obj)
         }
     }

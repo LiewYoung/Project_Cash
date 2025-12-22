@@ -221,14 +221,10 @@ fun getCodePanel(engine: Python3Engine): ComposePanel {
  * 获取引擎
  * @return [Python3Engine]
  */
-fun getEngine(context: CommandRegistry?): Python3Engine {
+fun getEngine(): Python3Engine {
     val engine = Python3Engine()
     engine.restart()
 
-    context?.run {
-        changeEngine(engine)
-        engine.setCommands(this)
-    }
     engine.inject("Egg", EasterEgg())
     return engine
 }
@@ -236,7 +232,7 @@ fun getEngine(context: CommandRegistry?): Python3Engine {
 fun main() {
 
     FlatLightLaf.setup()
-    val engine = getEngine(null)
+    val engine = getEngine()
     val registry = CommandRegistry(engine)
     registry.registerAll(
         Command("p1", Player("公务员", 0, 0, 0)),
