@@ -39,7 +39,7 @@ class Python3Engine {
     private val outputStream = ByteArrayOutputStream()
 
     private var context: Context? = null
-    private var commands: CommandRegistry? = null
+    private var registry: CommandRegistry? = null
     private fun initContext() {
         context?.close()
 
@@ -85,13 +85,14 @@ class Python3Engine {
      */
     fun restart() {
         initContext()
-        commands?.changeEngine(this)
+        registry?.changeEngine(this)
         outputStream.reset()
     }
 
-    fun setCommands(commands: CommandRegistry) {
-        this.commands = commands
+    fun setRegistry(registry: CommandRegistry) {
+        this.registry = registry
     }
+
 }
 
 /**

@@ -1,7 +1,8 @@
 package top.liewyoung.thanos
 
 /**
- * 全局单例
+ * 全局单例<br>
+ * 命令注册表
  * @author LiewYoung
  * @date 2025/12/22
  */

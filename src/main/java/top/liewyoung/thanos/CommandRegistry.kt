@@ -2,6 +2,13 @@ package top.liewyoung.thanos
 
 data class Command(val name: String, val obj: Any)
 
+/**
+ * 这是一个注册器，允许用户注册命令，但是你不应当调用他<br>
+ * <b>无论在什么情况下你都只应当通过 CommandProcessor 来处理命令</b>
+ *
+ *@author LiewYoung
+ *@since 2025/12/22
+ */
 class CommandRegistry {
     /*命令注册表*/
     private val commands = CommandConfig;
@@ -9,6 +16,7 @@ class CommandRegistry {
 
     constructor(engine: Python3Engine?){
         this.engine = engine
+        engine?.setRegistry(this)
     }
 
     /**

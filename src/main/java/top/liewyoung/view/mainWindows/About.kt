@@ -43,22 +43,15 @@ import javax.swing.SwingUtilities
  */
 fun getAboutPanel(player: Player,vararg context: Command): ComposePanel {
 
-    val engine by lazy { getEngine() }
-    val commandConfig = CommandRegistry(engine)
+    val engine by lazy { getEngine() } //懒加载
+    val commandProcessor = CommandRegistry(engine)
 
     /**
      * 注册机
      */
     fun registryEngine( ){
-
-        commandConfig.registerAll(
-            Command("player", player),
-            Command("titles", TitlesTypes.entries.toTypedArray())
-        )
-
-        for(command in context){
-            commandConfig.register(command)
-        }
+        commandProcessor.register(Command("player", player))
+        commandProcessor.registerAll(*context)
     }
 
     return ComposePanel().apply {
